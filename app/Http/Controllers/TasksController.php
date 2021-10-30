@@ -84,12 +84,17 @@ class TasksController extends Controller
     public function show($id)
     {
         // idの値でタスクを検索して取得
-        $task = Task::findOrFail($id);
+        $task = \App\Task::findOrFail($id);
         
-        // タスク詳細ビューでそれを表示
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、タスク詳細ビューでそれを表示
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.show', [
+                'task' => $task,
+            ]);
+        }
+            
+        // トップページへリダイレクトさせる
+        return redirect('/');
     }
 
     /**
@@ -102,12 +107,17 @@ class TasksController extends Controller
     public function edit($id)
     {
         // idの値でタスクを検索して取得
-        $task = Task::findOrFail($id);
+        $task = \App\Task::findOrFail($id);
         
-        // タスク編集ビューでそれを表示
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、タスク編集ビューでそれを表示
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.edit', [
+                'task' => $task,
+            ]);
+        }
+        
+        // トップページへリダイレクトさせる
+        return redirect('/');
     }
 
     /**
@@ -127,11 +137,14 @@ class TasksController extends Controller
         ]);
         
         // idの値でタスクを検索して取得
-        $task = Task::findOrFail($id);
-        // タスクを更新
-        $task->status = $request->status;    // 追加
-        $task->content = $request->content;
-        $task->save();
+        $task = \App\Task::findOrFail($id);
+        
+        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、タスクを更新
+        if (\Auth::id() === $task->user_id) {
+            $task->status = $request->status;    // 追加
+            $task->content = $request->content;
+            $task->save();
+        }
         
         // トップページへリダイレクトさせる
         return redirect('/');
